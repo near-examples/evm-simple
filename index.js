@@ -39,5 +39,4 @@ Demo = {
     console.log('viewResult', viewResult);
   }
 }
-
 Demo.start();
