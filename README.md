@@ -16,7 +16,7 @@ This repository serves to demonstrate basic interactions with the NEAR EVM using
 │     └── Adoption.json     ⟵ artifact from NEAR Pet Shop
 ├── index.js                ⟵ main file with EVM interaction
 ├── package.json            ⟵ list dependencies for interaction
-├── private-keys
+├── neardev                 ⟵ contains private (function-call access ) keys
 │  └── betanet
 │     ├── josh.betanet.json ⟵ function-call access key
 │     └── mike.betanet.json ⟵ function-call access key
@@ -31,7 +31,7 @@ The file `./build/contracts/Adoption.json` is an artifact build when compiling t
 
 This file will use `view` (non-mutable) and `call` (mutating) function calls on the contract. In this simple demonstration, it will use private keys for the accounts `mike.betanet` and `josh.betanet` to interact directly with the smart contract on the NEAR EVM account.
 
-The NEAR Pet Shop smart contract is deployed to **betanet**'s evm, which lives at the account `evm`. This `evm` account can and will have many smart contracts deployed to it, with its transactions operating synchronously.
+The NEAR Pet Shop smart contract is deployed to **betanet**'s EVM, which lives at the account `evm`. This `evm` account can and will have many smart contracts deployed to it, with its transactions operating synchronously.
 
 Please see the comments in this file for more information.
 

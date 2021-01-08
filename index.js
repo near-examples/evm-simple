@@ -19,8 +19,8 @@ Demo = {
     // See the NEAR Pet Shop example at: https://github.com/near-examples/near-pet-shop
     const myContractArtifact = require('./build/contracts/Adoption.json');
     const networkId = nearProvider.version;
-    console.log('aloha networkId', networkId);
     const myContractAddress = myContractArtifact.networks[networkId].address;
+
     const myContract = new Contract(myContractArtifact.abi, myContractAddress, {
       from: myContractAddress
     });
