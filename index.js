@@ -14,7 +14,7 @@ Demo = {
       networkId: 'betanet',
       masterAccountId: betanetAccount,
       // See list of near-api-js keystores here: https://near.github.io/near-api-js/classes/_key_stores_keystore_.keystore.html
-      keyStore: new nearAPI.keyStores.UnencryptedFileSystemKeyStore('./private-keys'),
+      keyStore: new nearAPI.keyStores.UnencryptedFileSystemKeyStore('./neardev'),
     });
     // See the NEAR Pet Shop example at: https://github.com/near-examples/near-pet-shop
     const myContractArtifact = require('./build/contracts/Adoption.json');
