@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/near-web3-provider@1.1.0/dist/near-web3-provider.min.js"></script>
+  <link rel="icon" href="favicon-32x32.png" sizes="32x32">
+  <link rel="icon" href="favicon-192x192.png" sizes="192x192">
+  <title>EVM Simple via frontend</title>
+</head>
+<body>
+<div id="data">
+  <label for="area-data">Raw NEAR EVM data from a betanet contract based on the <a href="https://github.com/near-examples/near-pet-shop" target="_blank">NEAR Pet Shop</a> example.</label><br/>
+  <textarea id="area-data" rows="16" cols="64">Please click refresh to populate.</textarea>
+</div>
+<div id="buttons" style="padding: 10px 0;">
+  <button id="btn-refresh" class="btn" type="button" onclick="clickRefresh()" tabindex="0">Refresh</button>
+  <button id="btn-mike" class="btn" type="button" onclick="clickMike()" tabindex="1">Send transaction from Mike</button>
+  <button id="btn-josh" class="btn" type="button" onclick="clickJosh()" tabindex="2">Send transaction from Josh</button>
+</div>
+<div style="padding: 10px 0;">
+  <span id="refresh-reminder" style="display: block"></span>
+</div>
+<div>
+  <input type="text" id="input-convert" size="19" value="josh.betanet" tabindex="3">
+  <button id="btn-convert" class="btn" type="button" onclick="clickConvert()" tabindex="4">Convert NEAR account to EVM address
+  </button>
+</div>
+<div style="padding: 10px 0;">
+  <span id="converted"></span>
+</div>
+<div style="padding: 10px 0;">
+  <span id="explorer-link"></span>
+</div>
+
+<script type="application/javascript">
+  Demo = {
+    refresh: async function() {
+      document.getElementById('refresh-reminder').innerText = '';
+      // Instantiate the provider in read-only mode
+      const nearProvider = new nearWeb3Provider.NearProvider({
+        networkId: 'betanet',
+        isReadOnly: true,
+        keyStore: new nearWeb3Provider.nearAPI.keyStores.BrowserLocalStorageKeyStore(),
+      });
+      // See how the "data" is determined by entering this into console:
+      // nearWeb3Provider.utils.keccak256('getAdopters()')
+      // and take a look at the first few bytes.
+      // More details: https://docs.soliditylang.org/en/v0.5.3/abi-spec.html#function-selector
+      let rawResult = await nearProvider.routeEthCall([{
+        data: '0x3de4eb17',
+        from: '0xadf11a39283ceb00deb90a5ce9220f89c6c27e67', // for view-only calls, we'll just use the contract address
+        to: '0xadf11a39283ceb00deb90a5ce9220f89c6c27e67' // address where Pet Shop contract was deployed
+      }]);
+      rawResult = nearWeb3Provider.utils.remove0x(rawResult);
+      const txtArea = document.getElementById("area-data");
+      txtArea.value = ''; // Clear first
+      for (let i = 0; i < rawResult.length; i++) {
+        txtArea.value += rawResult.substr(i * 64, 64) + "\n";
+      }
+    },
+
+    sendFromAccount: async function(account, keyPair){
+      const interactionButtons = ["btn-mike", "btn-josh", "btn-refresh"];
+      interactionButtons.forEach(btn => document.getElementById(btn).disabled = true);
+      let key = new nearWeb3Provider.nearAPI.keyStores.BrowserLocalStorageKeyStore();
+      await key.setKey('betanet', account, keyPair);
+      // Instantiate provider with an account and key capable for signing transactions
+      const nearProvider = new nearWeb3Provider.NearProvider({
+        networkId: 'betanet',
+        masterAccountId: account,
+        keyStore: key
+      });
+      const transactionResult = await nearProvider.routeEthSendTransaction([{
+        from: nearWeb3Provider.utils.nearAccountToEvmAddress(account),
+        // The below data says, call the function "adopt(uint256)" passing 0
+        data: '0x8588b2c50000000000000000000000000000000000000000000000000000000000000000',
+        to: '0xadf11a39283ceb00deb90a5ce9220f89c6c27e67'
+      }]);
+      document.getElementById('refresh-reminder').innerText = 'Click Refresh to view the updated state.';
+      const transactionHash = transactionResult.split(':')[0];
+      document.getElementById('explorer-link').innerHTML = `View transaction in NEAR Explorer: <a href="https://explorer.betanet.near.org/transactions/${transactionHash}" target="_blank">https://explorer.betanet.near.org/transactions/${transactionHash}</a>`;
+      interactionButtons.forEach(btn => document.getElementById(btn).disabled = false);
+      document.getElementById("btn-refresh").focus();
+    },
+  };
+
+  function clickMike() {
+    // This is taken from "private_key" in neardev/betanet/mike.betanet.json
+    const key = nearWeb3Provider.nearAPI.KeyPair.fromString('ed25519:5LcfQ7DFJhJnQ79W4ASTL82cHQk3ThjmFK51i4VKpZp2TTakDpkyZ9viui9mBEfHQLNAF5kNtqm6ZMjHQrJqqsE3');
+    Demo.sendFromAccount('mike.betanet', key);
+  }
+
+  function clickJosh() {
+    // This is taken from "private_key" in neardev/betanet/josh.betanet.json
+    // Yes, this is the same as Mike's private key.
+    // One wouldn't typically do this, but it demonstrates how much control over key pairs the NEAR account system allows.
+    const key = nearWeb3Provider.nearAPI.KeyPair.fromString('ed25519:5LcfQ7DFJhJnQ79W4ASTL82cHQk3ThjmFK51i4VKpZp2TTakDpkyZ9viui9mBEfHQLNAF5kNtqm6ZMjHQrJqqsE3');
+    Demo.sendFromAccount('josh.betanet', key);
+  }
+
+  function clickRefresh() {
+    Demo.refresh();
+  }
+
+  // Converts a NEAR account into an EVM address
+  function clickConvert() {
+    const convertedEl = document.getElementById("converted");
+    const accountToConvert = document.getElementById("input-convert").value;
+    try {
+      convertedEl.innerText = nearWeb3Provider.utils.nearAccountToEvmAddress(accountToConvert);
+    } catch (e) {
+      convertedEl.innerText = `Whoops: ${e.message}`;
+    }
+  }
+  document.getElementById("btn-refresh").focus();
+</script>
+</body>
+</html>
