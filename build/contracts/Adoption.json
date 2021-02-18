@@ -1191,7 +1191,7 @@
     "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
-    "1313161554": {
+    "1313161556": {
       "events": {},
       "links": {},
       "address": "0xAdf11a39283CEB00DEB90a5cE9220F89c6C27E67",
